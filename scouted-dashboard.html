@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scouted — Athlete Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0B1310;--bg2:#111C18;--bg3:#162119;--surface:#1A2A23;
+  --teal:#1D9E75;--teal-l:#5DCAA5;--teal-d:#085041;--teal-g:#0F6E56;
+  --blue:#185FA5;--border:#1F3328;--text:#EAF5EF;--muted:#6B9E85;
+  --sw:240px;--radius:10px;
+}
+
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden}
+input,select,textarea,button{font-family:'DM Sans',sans-serif}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal)!important}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sw);min-width:var(--sw);background:var(--bg2);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:100;
+}
+.sb-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;text-decoration:none}
+.sb-logo svg{flex-shrink:0}
+.sb-logo span{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text)}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto}
+.nav-group{margin-bottom:20px}
+.nav-label{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 10px;margin-bottom:6px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:8px;cursor:pointer;transition:background .15s,color .15s;
+  font-size:13px;font-weight:400;color:var(--muted);margin-bottom:2px;
+}
+.nav-item:hover{background:var(--surface);color:var(--text)}
+.nav-item.active{background:rgba(29,158,117,.15);color:var(--teal-l)}
+.nav-item svg{flex-shrink:0;width:16px;height:16px}
+.nav-item .badge{margin-left:auto;font-size:10px;background:var(--teal);color:#fff;padding:1px 7px;border-radius:20px}
+.sb-footer{padding:16px 20px;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:10px}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:rgba(29,158,117,.2);border:1px solid rgba(29,158,117,.4);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:var(--teal-l);flex-shrink:0}
+.sb-name{font-size:13px;font-weight:400;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-plan{font-size:11px;color:var(--muted)}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sw);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.page-header{padding:28px 36px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.5px}
+.page-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.page-content{padding:24px 36px 48px}
+
+/* ── SAVE BAR ── */
+.save-bar{display:flex;align-items:center;gap:10px}
+.btn-save{padding:10px 22px;border-radius:8px;background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:500;cursor:pointer;transition:background .2s}
+.btn-save:hover{background:var(--teal-g)}
+.btn-save:disabled{opacity:.6;cursor:default}
+.save-status{font-size:12px;color:var(--muted)}
+
+/* ── COMPLETION RING ── */
+.completion-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;display:flex;align-items:center;gap:24px;margin-bottom:20px}
+.ring-wrap{position:relative;width:80px;height:80px;flex-shrink:0}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text)}
+.completion-info h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px}
+.completion-info p{font-size:13px;color:var(--muted);line-height:1.6}
+.completion-fields{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cf-tag{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);color:var(--muted)}
+.cf-tag.done{background:rgba(29,158,117,.1);border-color:rgba(29,158,117,.3);color:var(--teal-l)}
+
+/* ── QUICK STATS ── */
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.quick-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.qc-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:var(--teal-l);letter-spacing:-.5px}
+.qc-label{font-size:12px;color:var(--muted);margin-top:3px}
+
+/* ── PROFILE LINK CARD ── */
+.link-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.link-url{font-size:13px;color:var(--teal-l);font-family:monospace}
+.link-actions{display:flex;gap:8px;flex-shrink:0}
+.btn-sm{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:border-color .2s}
+.btn-sm:hover{border-color:var(--teal)}
+.btn-sm.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.btn-sm.primary:hover{background:var(--teal-g)}
+
+/* ── SECTION HEADER ── */
+.section{display:none}
+.section.active{display:block}
+.section-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:16px}
+.sc-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+
+/* ── FORM ELEMENTS ── */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field-grid.three{grid-template-columns:repeat(3,1fr)}
+.field-grid.one{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.03em}
+.field label span{color:var(--teal);margin-left:2px}
+input[type=text],input[type=email],input[type=tel],input[type=number],input[type=url],input[type=date],select,textarea{
+  width:100%;padding:11px 14px;border-radius:8px;border:1px solid var(--border);
+  background:rgba(255,255,255,.04);color:var(--text);font-size:14px;
+  transition:border-color .2s;appearance:none;
+}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%236B9E85' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+textarea{resize:vertical;min-height:90px;line-height:1.6}
+.hint{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat-field{display:flex;flex-direction:column;gap:5px}
+.stat-field label{font-size:11px;color:var(--muted)}
+.stat-field input{padding:9px 12px;font-size:14px;font-weight:500;color:var(--teal-l);text-align:center}
+
+/* ── ACHIEVEMENTS ── */
+.achievement-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.achievement-row input{flex:1}
+.btn-remove{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:border-color .2s,color .2s}
+.btn-remove:hover{border-color:#E05252;color:#E05252}
+.btn-add{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:7px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:border-color .2s,color .2s;margin-top:4px}
+.btn-add:hover{border-color:var(--teal);color:var(--teal)}
+
+/* ── VIDEO SECTION ── */
+.video-embed{width:100%;aspect-ratio:16/9;border-radius:10px;border:1px solid var(--border);background:var(--bg3);overflow:hidden;margin-top:14px}
+.video-embed iframe{width:100%;height:100%;border:none}
+.video-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted)}
+
+/* ── RESUME SECTION ── */
+.resume-preview{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:16px}
+.resume-header{background:var(--teal-d);border-radius:8px;padding:20px 24px;margin-bottom:20px}
+.rh-logo{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-l);margin-bottom:8px}
+.rh-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:4px}
+.rh-sport{font-size:13px;color:var(--teal-l)}
+.resume-body{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.rb-section h4{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+.rb-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.rb-row:last-child{border-bottom:none}
+.rb-key{color:var(--muted)}
+.rb-val{color:var(--text);font-weight:500}
+.resume-bio{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.resume-bio h4{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+.resume-bio p{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* ── PUBLIC PROFILE MODAL ── */
+#modal-public{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);overflow-y:auto;padding:40px 24px}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:680px;margin:0 auto;overflow:hidden}
+.modal-top{background:var(--teal-d);padding:28px 32px;position:relative}
+.modal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.1);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.pub-name{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.5px}
+.pub-sport{font-size:14px;color:var(--teal-l);margin-bottom:16px}
+.pub-tags{display:flex;flex-wrap:wrap;gap:8px}
+.pub-tag{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9);font-size:12px;padding:4px 12px;border-radius:20px}
+.modal-body{padding:28px 32px}
+.pub-section{margin-bottom:24px}
+.pub-section h3{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.pub-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pub-stat{background:var(--surface);border-radius:8px;padding:10px 14px}
+.ps-val{font-size:18px;font-weight:600;color:var(--text)}
+.ps-key{font-size:11px;color:var(--muted)}
+.pub-video{width:100%;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:var(--bg3);border:1px solid var(--border)}
+.pub-video iframe{width:100%;height:100%;border:none}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--teal);color:var(--text);padding:12px 20px;border-radius:10px;font-size:13px;transform:translateY(80px);opacity:0;transition:all .3s;z-index:500}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ── DOWNLOAD BTN ── */
+.btn-download{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:10px;background:var(--teal);color:#fff;border:none;font-size:14px;font-weight:500;cursor:pointer;transition:background .2s}
+.btn-download:hover{background:var(--teal-g)}
+.btn-preview{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:10px;background:transparent;color:var(--text);border:1px solid var(--border);font-size:14px;font-weight:500;cursor:pointer;transition:border-color .2s}
+.btn-preview:hover{border-color:var(--teal)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);transition:transform .3s}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .page-header,.page-content{padding-left:20px;padding-right:20px}
+  .field-grid,.field-grid.three{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .quick-grid{grid-template-columns:1fr 1fr}
+  .resume-body,.pub-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<nav class="sidebar" id="sidebar">
+  <a class="sb-logo" href="scouted-landing.html">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+      <circle cx="13" cy="13" r="9" stroke="#1D9E75" stroke-width="2.5"/>
+      <line x1="20" y1="20" x2="28" y2="28" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="13" cy="13" r="3.5" fill="#185FA5"/>
+    </svg>
+    <span>Scouted</span>
+  </a>
+
+  <div class="sb-nav">
+    <div class="nav-group">
+      <div class="nav-label">My Dashboard</div>
+      <div class="nav-item active" onclick="showSection('home')" id="nav-home">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 6l6-4 6 4v8H10V9H6v5H2V6z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Overview
+      </div>
+      <div class="nav-item" onclick="showSection('profile')" id="nav-profile">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Personal Info
+      </div>
+      <div class="nav-item" onclick="showSection('sport')" id="nav-sport">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M4 8c0-2 2-3 4-3s4 1 4 3M4 8c0 2 2 3 4 3s4-1 4-3" stroke="currentColor" stroke-width="1.2"/></svg>
+        Sport & Stats
+      </div>
+      <div class="nav-item" onclick="showSection('academic')" id="nav-academic">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 2l6 3-6 3-6-3 6-3z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 8v4M14 8v4M5 9.5l3 1.5 3-1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Academic
+      </div>
+      <div class="nav-item" onclick="showSection('video')" id="nav-video">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M11 6l4-2v8l-4-2V6z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        Highlights
+      </div>
+      <div class="nav-item" onclick="showSection('resume')" id="nav-resume">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="14" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M6 5h4M6 8h4M6 11h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        My Resume
+        <span class="badge">PDF</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar">?</div>
+      <div>
+        <div class="sb-name" id="sb-uname">Your Name</div>
+        <div class="sb-plan">Free Plan</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── MAIN CONTENT ── -->
+<main class="main">
+
+  <!-- ── HOME ── -->
+  <div id="s-home" class="section active">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Track your recruiting progress</div>
+      </div>
+      <div class="save-bar">
+        <div class="save-status" id="save-status">All changes saved</div>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <!-- Completion -->
+      <div class="completion-card">
+        <div class="ring-wrap">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#1F3328" stroke-width="8"/>
+            <circle cx="40" cy="40" r="34" fill="none" stroke="#1D9E75" stroke-width="8"
+              stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6"
+              id="ring-circle" style="transition:stroke-dashoffset .6s ease"/>
+          </svg>
+          <div class="ring-pct" id="ring-pct">0%</div>
+        </div>
+        <div class="completion-info">
+          <h3>Profile Completion</h3>
+          <p id="completion-msg">Complete your profile so coaches can find you and evaluate your potential.</p>
+          <div class="completion-fields" id="completion-fields"></div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="quick-grid">
+        <div class="quick-card">
+          <div class="qc-val" id="qs-sport">—</div>
+          <div class="qc-label">Sport</div>
+        </div>
+        <div class="quick-card">
+          <div class="qc-val" id="qs-gpa">—</div>
+          <div class="qc-label">GPA</div>
+        </div>
+        <div class="quick-card">
+          <div class="qc-val" id="qs-grad">—</div>
+          <div class="qc-label">Graduation Year</div>
+        </div>
+      </div>
+
+      <!-- Public Link -->
+      <div class="link-card">
+        <div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Your public profile link</div>
+          <div class="link-url" id="public-url">scouted.app/athlete/your-name</div>
+        </div>
+        <div class="link-actions">
+          <button class="btn-sm" onclick="copyLink()">Copy link</button>
+          <button class="btn-sm primary" onclick="openPublicProfile()">Preview →</button>
+        </div>
+      </div>
+
+      <!-- Next Steps -->
+      <div class="section-card">
+        <div class="sc-title">Next steps to get recruited</div>
+        <div id="next-steps" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── PERSONAL INFO ── -->
+  <div id="s-profile" class="section">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Personal Info</div>
+        <div class="page-sub">Your basic information visible to coaches</div>
+      </div>
+      <div class="save-bar">
+        <span class="save-status" id="save-status-profile"></span>
+        <button class="btn-save" onclick="saveAll()">Save changes</button>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <div class="section-card">
+        <div class="sc-title">Identity</div>
+        <div class="field-grid" style="gap:14px">
+          <div class="field">
+            <label>Full name <span>*</span></label>
+            <input type="text" id="f-name" placeholder="e.g. Carlos Rodríguez" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Email address</label>
+            <input type="email" id="f-email" placeholder="your@email.com" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Phone / WhatsApp</label>
+            <input type="tel" id="f-phone" placeholder="+57 300 123 4567" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Date of birth</label>
+            <input type="date" id="f-dob" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Country <span>*</span></label>
+            <select id="f-country" onchange="autoSave()">
+              <option value="">Select country...</option>
+              <option>Colombia</option><option>Brazil</option><option>Mexico</option>
+              <option>Argentina</option><option>Venezuela</option><option>Ecuador</option>
+              <option>Peru</option><option>Chile</option><option>Uruguay</option>
+              <option>Paraguay</option><option>Bolivia</option><option>Costa Rica</option>
+              <option>Panama</option><option>Dominican Republic</option><option>Cuba</option>
+              <option>Puerto Rico</option><option>United States</option><option>Canada</option>
+              <option>Spain</option><option>Portugal</option><option>France</option>
+              <option>Germany</option><option>Italy</option><option>Netherlands</option>
+              <option>England</option><option>Nigeria</option><option>Ghana</option>
+              <option>Kenya</option><option>South Africa</option><option>Cameroon</option>
+              <option>Japan</option><option>South Korea</option><option>Australia</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>City</label>
+            <input type="text" id="f-city" placeholder="e.g. Bogotá" oninput="autoSave()">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="sc-title">Physical Profile</div>
+        <div class="field-grid three">
+          <div class="field">
+            <label>Height</label>
+            <input type="text" id="f-height" placeholder="e.g. 5'11&quot; or 180cm" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Weight</label>
+            <input type="text" id="f-weight" placeholder="e.g. 165 lbs or 75kg" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Dominant hand/foot</label>
+            <select id="f-dominant" onchange="autoSave()">
+              <option value="">Select...</option>
+              <option>Right</option><option>Left</option><option>Both</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="sc-title">Languages & Communication</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>Languages spoken</label>
+            <input type="text" id="f-languages" placeholder="e.g. Spanish (native), English (B2)" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>English level</label>
+            <select id="f-english" onchange="autoSave()">
+              <option value="">Select level...</option>
+              <option>Beginner (A1/A2)</option><option>Intermediate (B1/B2)</option>
+              <option>Advanced (C1/C2)</option><option>Native</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="sc-title">About Me <span style="font-size:12px;color:var(--muted);font-weight:400">(shown to coaches)</span></div>
+        <div class="field field-grid one">
+          <div class="field">
+            <label>Personal statement <span>*</span></label>
+            <textarea id="f-bio" rows="5" placeholder="Tell coaches about yourself, your passion for your sport, your goals, and why you want to study and compete in the US..." oninput="autoSave()"></textarea>
+            <div class="hint">Recommended: 100–200 words. Be authentic and specific.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SPORT ── -->
+  <div id="s-sport" class="section">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Sport & Stats</div>
+        <div class="page-sub">Your athletic profile and performance data</div>
+      </div>
+      <div class="save-bar">
+        <span class="save-status" id="save-status-sport"></span>
+        <button class="btn-save" onclick="saveAll()">Save changes</button>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <div class="section-card">
+        <div class="sc-title">Sport Information</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>Sport <span>*</span></label>
+            <select id="f-sport" onchange="updatePositions();updateStats();autoSave()">
+              <option value="">Select sport...</option>
+              <option>Soccer / Football</option><option>Baseball</option>
+              <option>Basketball</option><option>Swimming</option><option>Tennis</option>
+              <option>Track & Field</option><option>Volleyball</option>
+              <option>Cross Country</option><option>Golf</option><option>Softball</option>
+              <option>Lacrosse</option><option>Field Hockey</option><option>Wrestling</option>
+              <option>Rowing / Crew</option><option>Gymnastics</option><option>Water Polo</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Position / Specialty <span>*</span></label>
+            <select id="f-position" onchange="autoSave()">
+              <option value="">Select sport first...</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Current team / club</label>
+            <input type="text" id="f-team" placeholder="e.g. Academia Real Bogotá" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Years playing this sport</label>
+            <select id="f-years" onchange="autoSave()">
+              <option value="">Select...</option>
+              <option>1–2 years</option><option>3–4 years</option><option>5–6 years</option>
+              <option>7–8 years</option><option>9–10 years</option><option>10+ years</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Jersey / bib number</label>
+            <input type="text" id="f-jersey" placeholder="e.g. #10" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Eligible to play from</label>
+            <select id="f-eligible" onchange="autoSave()">
+              <option value="">Select year...</option>
+              <option>2025</option><option>2026</option><option>2027</option>
+              <option>2028</option><option>2029</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card" id="stats-card">
+        <div class="sc-title">Performance Stats <span style="font-size:12px;color:var(--muted);font-weight:400">(season or career)</span></div>
+        <div class="stats-grid" id="stats-container">
+          <div style="grid-column:1/-1;color:var(--muted);font-size:13px">Select a sport above to see relevant stats.</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="sc-title">Achievements & Honors</div>
+        <div id="achievements-container"></div>
+        <button class="btn-add" onclick="addAchievement()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Add achievement
+        </button>
+        <div class="hint" style="margin-top:10px">e.g. "Best player of the tournament — Copa Colombia 2024", "Regional champion"</div>
+      </div>
+
+      <div class="section-card">
+        <div class="sc-title">Additional Notes for Coaches</div>
+        <div class="field">
+          <textarea id="f-sport-notes" rows="3" placeholder="Any additional context about your athletic profile, injuries, tryout availability, etc." oninput="autoSave()"></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── ACADEMIC ── -->
+  <div id="s-academic" class="section">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Academic Profile</div>
+        <div class="page-sub">Your academic information for NCAA/NAIA eligibility</div>
+      </div>
+      <div class="save-bar">
+        <span class="save-status" id="save-status-academic"></span>
+        <button class="btn-save" onclick="saveAll()">Save changes</button>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <div class="section-card">
+        <div class="sc-title">School Information</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>School / High School name <span>*</span></label>
+            <input type="text" id="f-school" placeholder="e.g. Colegio Los Alpes" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>School city & country</label>
+            <input type="text" id="f-school-location" placeholder="e.g. Bogotá, Colombia" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Expected graduation date <span>*</span></label>
+            <select id="f-graduation" onchange="autoSave()">
+              <option value="">Select...</option>
+              <option>June 2025</option><option>December 2025</option>
+              <option>June 2026</option><option>December 2026</option>
+              <option>June 2027</option><option>June 2028</option>
+              <option>Already graduated</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Current grade / year</label>
+            <select id="f-grade" onchange="autoSave()">
+              <option value="">Select...</option>
+              <option>9th Grade / Freshman</option><option>10th Grade / Sophomore</option>
+              <option>11th Grade / Junior</option><option>12th Grade / Senior</option>
+              <option>Recently graduated</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="sc-title">Academic Performance</div>
+        <div class="field-grid three">
+          <div class="field">
+            <label>GPA <span>*</span></label>
+            <input type="number" id="f-gpa" step="0.01" min="0" max="10" placeholder="e.g. 3.8" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>GPA scale</label>
+            <select id="f-gpa-scale" onchange="autoSave()">
+              <option value="4.0">4.0 scale (US)</option>
+              <option value="5.0">5.0 scale</option>
+              <option value="10">10 scale (Latin America)</option>
+              <option value="100">100 scale</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Class rank</label>
+            <input type="text" id="f-rank" placeholder="e.g. Top 10%" oninput="autoSave()">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="sc-title">Standardized Tests</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>SAT score</label>
+            <input type="number" id="f-sat" min="400" max="1600" placeholder="e.g. 1250" oninput="autoSave()">
+            <div class="hint">Score out of 1600. Leave blank if not taken yet.</div>
+          </div>
+          <div class="field">
+            <label>ACT score</label>
+            <input type="number" id="f-act" min="1" max="36" placeholder="e.g. 27" oninput="autoSave()">
+            <div class="hint">Score out of 36. Leave blank if not taken yet.</div>
+          </div>
+          <div class="field">
+            <label>TOEFL score</label>
+            <input type="number" id="f-toefl" min="0" max="120" placeholder="e.g. 90" oninput="autoSave()">
+            <div class="hint">For non-native English speakers. Score out of 120.</div>
+          </div>
+          <div class="field">
+            <label>IELTS score</label>
+            <input type="text" id="f-ielts" placeholder="e.g. 6.5" oninput="autoSave()">
+            <div class="hint">Score out of 9.0.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="sc-title">University Preferences</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>Intended major / field of study</label>
+            <input type="text" id="f-major" placeholder="e.g. Business Administration, Engineering" oninput="autoSave()">
+          </div>
+          <div class="field">
+            <label>Preferred division</label>
+            <select id="f-division" onchange="autoSave()">
+              <option value="">No preference</option>
+              <option>NCAA Division I</option><option>NCAA Division II</option>
+              <option>NAIA</option><option>Any — open to all</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Preferred US region</label>
+            <select id="f-region" onchange="autoSave()">
+              <option value="">No preference</option>
+              <option>Northeast (NY, MA, CT...)</option><option>Southeast (FL, GA, NC...)</option>
+              <option>Midwest (OH, IL, MI...)</option><option>Southwest (TX, AZ...)</option>
+              <option>West (CA, WA, OR...)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Scholarship need</label>
+            <select id="f-scholarship" onchange="autoSave()">
+              <option value="">Select...</option>
+              <option>Full scholarship required</option>
+              <option>Partial scholarship acceptable</option>
+              <option>Open to walk-on opportunities</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── VIDEO ── -->
+  <div id="s-video" class="section">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Highlights</div>
+        <div class="page-sub">Your highlight videos for coaches to watch</div>
+      </div>
+      <div class="save-bar">
+        <button class="btn-save" onclick="saveAll()">Save changes</button>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <div class="section-card">
+        <div class="sc-title">Main Highlight Video <span>*</span></div>
+        <div class="field">
+          <label>YouTube or Vimeo URL <span style="color:var(--teal)">*</span></label>
+          <input type="url" id="f-video" placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..." oninput="updateVideoEmbed('main');autoSave()">
+          <div class="hint">Paste the full link of your highlight video. Make sure it is public or unlisted.</div>
+        </div>
+        <div class="video-embed" id="video-main">
+          <div class="video-placeholder">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#1F3328" stroke-width="2"/><path d="M16 13l12 7-12 7V13z" fill="#1F3328"/></svg>
+            <span style="font-size:13px">Paste a video URL to preview</span>
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label>Video description</label>
+          <input type="text" id="f-video-desc" placeholder="e.g. Season 2024 highlights — 23 goals, Copa Colombia" oninput="autoSave()">
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="sc-title">Additional Video (optional)</div>
+        <div class="field">
+          <label>Second video URL</label>
+          <input type="url" id="f-video2" placeholder="https://youtube.com/watch?v=..." oninput="updateVideoEmbed('two');autoSave()">
+        </div>
+        <div class="video-embed" id="video-two" style="margin-top:12px">
+          <div class="video-placeholder">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#1F3328" stroke-width="2"/><path d="M16 13l12 7-12 7V13z" fill="#1F3328"/></svg>
+            <span style="font-size:13px">Second video (optional)</span>
+          </div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label>Description</label>
+          <input type="text" id="f-video2-desc" placeholder="e.g. Training session, technical skills" oninput="autoSave()">
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="sc-title">Tips for a great highlight video</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)"><span style="color:var(--teal);flex-shrink:0">→</span>Keep it between 3–5 minutes. Coaches watch hundreds of videos.</div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)"><span style="color:var(--teal);flex-shrink:0">→</span>Start with your best moments in the first 30 seconds — that's what gets watched most.</div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)"><span style="color:var(--teal);flex-shrink:0">→</span>Include your name and sport at the beginning of the video.</div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)"><span style="color:var(--teal);flex-shrink:0">→</span>Good video quality matters. Avoid very shaky or dark footage.</div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)"><span style="color:var(--teal);flex-shrink:0">→</span>Make sure your video is set to Public or Unlisted on YouTube.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── RESUME ── -->
+  <div id="s-resume" class="section">
+    <div class="page-header">
+      <div>
+        <div class="page-title">My Resume</div>
+        <div class="page-sub">Your professional athletic resume for coaches</div>
+      </div>
+      <div class="save-bar">
+        <button class="btn-preview" onclick="openPublicProfile()">Preview public profile</button>
+        <button class="btn-download" onclick="generatePDF()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Download PDF
+        </button>
+      </div>
+    </div>
+    <div class="page-content">
+
+      <div class="resume-preview" id="resume-preview">
+        <div class="resume-header">
+          <div class="rh-logo">SCOUTED · Athletic Recruiting Profile</div>
+          <div class="rh-name" id="rv-name">Your Name</div>
+          <div class="rh-sport" id="rv-sport">Sport · Position · Country</div>
+        </div>
+        <div class="resume-body">
+          <div>
+            <div class="rb-section">
+              <h4>Athletic Profile</h4>
+              <div class="rb-row"><span class="rb-key">Sport</span><span class="rb-val" id="rv-sport2">—</span></div>
+              <div class="rb-row"><span class="rb-key">Position</span><span class="rb-val" id="rv-position">—</span></div>
+              <div class="rb-row"><span class="rb-key">Current Team</span><span class="rb-val" id="rv-team">—</span></div>
+              <div class="rb-row"><span class="rb-key">Height</span><span class="rb-val" id="rv-height">—</span></div>
+              <div class="rb-row"><span class="rb-key">Weight</span><span class="rb-val" id="rv-weight">—</span></div>
+              <div class="rb-row"><span class="rb-key">Eligible from</span><span class="rb-val" id="rv-eligible">—</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="rb-section">
+              <h4>Academic Profile</h4>
+              <div class="rb-row"><span class="rb-key">School</span><span class="rb-val" id="rv-school">—</span></div>
+              <div class="rb-row"><span class="rb-key">GPA</span><span class="rb-val" id="rv-gpa">—</span></div>
+              <div class="rb-row"><span class="rb-key">Graduation</span><span class="rb-val" id="rv-grad">—</span></div>
+              <div class="rb-row"><span class="rb-key">SAT / ACT</span><span class="rb-val" id="rv-sat">—</span></div>
+              <div class="rb-row"><span class="rb-key">English</span><span class="rb-val" id="rv-english">—</span></div>
+              <div class="rb-row"><span class="rb-key">Intended Major</span><span class="rb-val" id="rv-major">—</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="resume-bio">
+          <h4>About the athlete</h4>
+          <p id="rv-bio">Complete your profile to generate your resume.</p>
+        </div>
+        <div class="resume-bio">
+          <h4>Highlight Video</h4>
+          <p id="rv-video" style="color:var(--teal-l)">—</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-download" onclick="generatePDF()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Download PDF Resume
+        </button>
+        <button class="btn-preview" onclick="copyLink()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 8a2 2 0 100-4 2 2 0 000 4zM10 12a2 2 0 100-4 2 2 0 000 4zM8 6l0 0M8 10l0 0" stroke="currentColor" stroke-width="1.3"/><path d="M7.5 6.5l1 1M7.5 9.5l1-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Copy public link
+        </button>
+      </div>
+
+      <div class="section-card" style="margin-top:16px">
+        <div class="sc-title">Email template for coaches</div>
+        <div style="background:var(--bg3);border-radius:8px;padding:16px;font-size:13px;color:var(--muted);line-height:1.8" id="email-template">
+          Complete your profile to generate an email template for coaches.
+        </div>
+        <button class="btn-sm" onclick="copyEmailTemplate()" style="margin-top:12px">Copy email template</button>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ── PUBLIC PROFILE MODAL ── -->
+<div id="modal-public">
+  <div class="modal-box">
+    <div class="modal-top">
+      <button class="modal-close" onclick="closePublicProfile()">×</button>
+      <div class="pub-name" id="pub-name">Athlete Name</div>
+      <div class="pub-sport" id="pub-sport">Sport · Position · Country</div>
+      <div class="pub-tags" id="pub-tags"></div>
+    </div>
+    <div class="modal-body">
+      <div class="pub-section">
+        <h3>Athletic Profile</h3>
+        <div class="pub-grid" id="pub-athletic"></div>
+      </div>
+      <div class="pub-section">
+        <h3>Academic Profile</h3>
+        <div class="pub-grid" id="pub-academic"></div>
+      </div>
+      <div class="pub-section" id="pub-video-section">
+        <h3>Highlight Video</h3>
+        <div class="pub-video" id="pub-video-embed"></div>
+      </div>
+      <div class="pub-section" id="pub-bio-section">
+        <h3>About the athlete</h3>
+        <p style="font-size:14px;color:var(--muted);line-height:1.7" id="pub-bio"></p>
+      </div>
+      <div style="background:var(--surface);border-radius:10px;padding:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:2px">Public profile link</div>
+          <div style="font-size:13px;color:var(--teal-l);font-family:monospace" id="pub-link-display"></div>
+        </div>
+        <button class="btn-sm primary" onclick="copyLink()">Copy link to share</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ DATA ═══════════════════════════════════════════════
+
+const POSITIONS = {
+  'Soccer / Football': ['Goalkeeper','Center Back','Left Back','Right Back','Defensive Midfielder','Central Midfielder','Attacking Midfielder','Left Wing','Right Wing','Center Forward','Striker'],
+  'Baseball': ['Pitcher','Catcher','First Base','Second Base','Third Base','Shortstop','Left Field','Center Field','Right Field','Designated Hitter'],
+  'Basketball': ['Point Guard','Shooting Guard','Small Forward','Power Forward','Center'],
+  'Swimming': ['Freestyle','Backstroke','Breaststroke','Butterfly','Individual Medley','Open Water'],
+  'Tennis': ['Singles specialist','Doubles specialist','Singles & Doubles'],
+  'Track & Field': ['100m','200m','400m','800m','1500m','5000m','10000m','110/100m Hurdles','400m Hurdles','3000m Steeplechase','High Jump','Long Jump','Triple Jump','Pole Vault','Shot Put','Discus','Javelin','Hammer','Decathlon / Heptathlon'],
+  'Volleyball': ['Outside Hitter','Right Side Hitter','Middle Blocker','Setter','Libero','Defensive Specialist'],
+  'Cross Country': ['Distance Runner'],
+  'Golf': ['Golfer'],
+  'Softball': ['Pitcher','Catcher','First Base','Second Base','Third Base','Shortstop','Left Field','Center Field','Right Field'],
+  'Lacrosse': ['Attack','Midfield','Defense','Goalie'],
+  'Field Hockey': ['Forward','Midfielder','Defender','Goalkeeper'],
+  'Wrestling': ['Freestyle','Greco-Roman'],
+  'Rowing / Crew': ['Coxed Eight','Coxed Four','Pair','Single Sculls','Double Sculls'],
+  'Gymnastics': ['Artistic','Rhythmic','Trampoline'],
+  'Water Polo': ['Center','Driver','Wing','Goalkeeper'],
+  'Other': ['Athlete'],
+};
+
+const STATS = {
+  'Soccer / Football': [{l:'Goals',k:'goals'},{l:'Assists',k:'assists'},{l:'Appearances',k:'apps'},{l:'Clean sheets (GK)',k:'cs'}],
+  'Baseball': [{l:'Batting avg',k:'ba'},{l:'Home runs',k:'hr'},{l:'RBIs',k:'rbi'},{l:'ERA (pitchers)',k:'era'},{l:'Strikeouts',k:'so'},{l:'Stolen bases',k:'sb'},{l:'OBP',k:'obp'},{l:'WHIP',k:'whip'}],
+  'Basketball': [{l:'Points/game',k:'ppg'},{l:'Rebounds/game',k:'rpg'},{l:'Assists/game',k:'apg'},{l:'Steals/game',k:'spg'}],
+  'Swimming': [{l:'Best time (main)',k:'time1'},{l:'Event PR',k:'event'},{l:'Qualifying time',k:'qt'},{l:'Meets competed',k:'meets'}],
+  'Tennis': [{l:'Ranking',k:'rank'},{l:'Win/Loss record',k:'wl'},{l:'Best result',k:'best'},{l:'Tournament level',k:'lvl'}],
+  'Track & Field': [{l:'Personal best',k:'pb'},{l:'Season best',k:'sb'},{l:'National rank',k:'nr'},{l:'Competitions',k:'comps'}],
+  'Volleyball': [{l:'Kills/set',k:'kills'},{l:'Aces/set',k:'aces'},{l:'Digs/set',k:'digs'},{l:'Blocks/set',k:'blocks'}],
+};
+
+// ═══ STATE ══════════════════════════════════════════════
+
+let data = {};
+let achievements = [];
+let autoSaveTimer = null;
+
+const REQUIRED_FIELDS = [
+  {k:'name',label:'Full name'},
+  {k:'country',label:'Country'},
+  {k:'sport',label:'Sport'},
+  {k:'position',label:'Position'},
+  {k:'gpa',label:'GPA'},
+  {k:'graduation',label:'Graduation year'},
+  {k:'school',label:'School'},
+  {k:'bio',label:'About me'},
+  {k:'video',label:'Highlight video'},
+  {k:'height',label:'Height'},
+  {k:'weight',label:'Weight'},
+];
+
+// ═══ NAVIGATION ═════════════════════════════════════════
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  const nav = document.getElementById('nav-'+id);
+  if(nav) nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ═══ SAVE / LOAD ═════════════════════════════════════════
+
+function collectData() {
+  const ids = ['name','email','phone','dob','country','city','height','weight','dominant',
+    'languages','english','bio','sport','position','team','years','jersey','eligible',
+    'sport-notes','school','school-location','graduation','grade','gpa','gpa-scale',
+    'rank','sat','act','toefl','ielts','major','division','region','scholarship',
+    'video','video-desc','video2','video2-desc'];
+  ids.forEach(id => {
+    const el = document.getElementById('f-'+id);
+    if(el) data[id.replace('-','_')] = el.value;
+  });
+  // stats
+  document.querySelectorAll('[data-stat]').forEach(el => {
+    data['stat_'+el.dataset.stat] = el.value;
+  });
+  data.achievements = achievements;
+}
+
+function populateData() {
+  const map = {name:'f-name',email:'f-email',phone:'f-phone',dob:'f-dob',country:'f-country',
+    city:'f-city',height:'f-height',weight:'f-weight',dominant:'f-dominant',
+    languages:'f-languages',english:'f-english',bio:'f-bio',sport:'f-sport',
+    position:'f-position',team:'f-team',years:'f-years',jersey:'f-jersey',
+    eligible:'f-eligible',sport_notes:'f-sport-notes',school:'f-school',
+    school_location:'f-school-location',graduation:'f-graduation',grade:'f-grade',
+    gpa:'f-gpa','gpa_scale':'f-gpa-scale',rank:'f-rank',sat:'f-sat',act:'f-act',
+    toefl:'f-toefl',ielts:'f-ielts',major:'f-major',division:'f-division',
+    region:'f-region',scholarship:'f-scholarship',video:'f-video',
+    video_desc:'f-video-desc',video2:'f-video2',video2_desc:'f-video2-desc'};
+  Object.keys(map).forEach(k => {
+    const el = document.getElementById(map[k]);
+    if(el && data[k]) el.value = data[k];
+  });
+}
+
+function saveAll() {
+  collectData();
+  localStorage.setItem('scouted_athlete', JSON.stringify(data));
+  showToast('✓ Changes saved');
+  updateUI();
+}
+
+function autoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    collectData();
+    localStorage.setItem('scouted_athlete', JSON.stringify(data));
+    updateUI();
+  }, 800);
+}
+
+function loadData() {
+  const saved = localStorage.getItem('scouted_athlete');
+  if(saved) {
+    data = JSON.parse(saved);
+    achievements = data.achievements || [];
+    populateData();
+    if(data.sport) { updatePositions(); updateStats(); }
+    renderAchievements();
+    if(data.video) updateVideoEmbed('main');
+    if(data.video2) updateVideoEmbed('two');
+  }
+}
+
+// ═══ POSITIONS & STATS ══════════════════════════════════
+
+function updatePositions() {
+  const sport = document.getElementById('f-sport').value;
+  const sel = document.getElementById('f-position');
+  const positions = POSITIONS[sport] || ['Athlete'];
+  sel.innerHTML = '<option value="">Select position...</option>' +
+    positions.map(p => `<option${data.position===p?' selected':''}>${p}</option>`).join('');
+  if(data.position && positions.includes(data.position)) sel.value = data.position;
+}
+
+function updateStats() {
+  const sport = document.getElementById('f-sport').value;
+  const container = document.getElementById('stats-container');
+  const statDefs = STATS[sport];
+  if(!statDefs) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:13px;grid-column:1/-1">Fill in your key stats below. Select your sport first.</div>';
+    return;
+  }
+  container.innerHTML = statDefs.map(s => `
+    <div class="stat-field">
+      <label>${s.l}</label>
+      <input type="text" data-stat="${s.k}" value="${data['stat_'+s.k]||''}" placeholder="—" oninput="autoSave()">
+    </div>`).join('');
+}
+
+// ═══ ACHIEVEMENTS ════════════════════════════════════════
+
+function renderAchievements() {
+  const c = document.getElementById('achievements-container');
+  if(!achievements.length) achievements = [''];
+  c.innerHTML = achievements.map((a,i) => `
+    <div class="achievement-row">
+      <input type="text" value="${a}" placeholder="e.g. MVP at Copa Colombia 2024"
+        oninput="achievements[${i}]=this.value;autoSave()">
+      <button class="btn-remove" onclick="removeAchievement(${i})">×</button>
+    </div>`).join('');
+}
+
+function addAchievement() {
+  achievements.push('');
+  renderAchievements();
+  const inputs = document.querySelectorAll('#achievements-container input');
+  inputs[inputs.length-1].focus();
+}
+
+function removeAchievement(i) {
+  achievements.splice(i,1);
+  if(!achievements.length) achievements = [''];
+  renderAchievements();
+  autoSave();
+}
+
+// ═══ VIDEO EMBED ═════════════════════════════════════════
+
+function getEmbedUrl(url) {
+  if(!url) return null;
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?]+)/);
+  if(yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vm = url.match(/vimeo\.com\/(\d+)/);
+  if(vm) return `https://player.vimeo.com/video/${vm[1]}`;
+  return null;
+}
+
+function updateVideoEmbed(which) {
+  const id = which==='main' ? 'f-video' : 'f-video2';
+  const containerId = which==='main' ? 'video-main' : 'video-two';
+  const url = document.getElementById(id).value;
+  const embed = getEmbedUrl(url);
+  const c = document.getElementById(containerId);
+  if(embed) {
+    c.innerHTML = `<iframe src="${embed}" allowfullscreen allow="accelerometer;autoplay;encrypted-media;gyroscope"></iframe>`;
+  } else {
+    c.innerHTML = `<div class="video-placeholder"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#1F3328" stroke-width="2"/><path d="M16 13l12 7-12 7V13z" fill="#1F3328"/></svg><span style="font-size:13px">${url?'Invalid URL — use YouTube or Vimeo':'Paste a video URL to preview'}</span></div>`;
+  }
+}
+
+// ═══ UI UPDATES ══════════════════════════════════════════
+
+function updateUI() {
+  updateCompletion();
+  updateQuickStats();
+  updatePublicLink();
+  updateResumePreview();
+  updateEmailTemplate();
+  updateSidebarUser();
+}
+
+function updateCompletion() {
+  const filled = REQUIRED_FIELDS.filter(f => {
+    const v = data[f.k] || data[f.k.replace('-','_')];
+    return v && v.toString().trim();
+  });
+  const pct = Math.round((filled.length / REQUIRED_FIELDS.length) * 100);
+  const circle = document.getElementById('ring-circle');
+  const circumference = 213.6;
+  circle.style.strokeDashoffset = circumference - (circumference * pct/100);
+  document.getElementById('ring-pct').textContent = pct+'%';
+  const msgs = ['Start by filling your personal info and sport details.',
+    'Good start! Add more info to attract coaches.',
+    'Almost there! Complete the remaining fields.',
+    'Great profile! Coaches can now find you easily.'];
+  document.getElementById('completion-msg').textContent = msgs[Math.min(3, Math.floor(pct/26))];
+  const tagsEl = document.getElementById('completion-fields');
+  tagsEl.innerHTML = REQUIRED_FIELDS.map(f => {
+    const done = filled.find(fi => fi.k===f.k);
+    return `<div class="cf-tag${done?' done':''}">${done?'✓ ':''} ${f.label}</div>`;
+  }).join('');
+  const steps = document.getElementById('next-steps');
+  const missing = REQUIRED_FIELDS.filter(f => !filled.find(fi=>fi.k===f.k));
+  if(!missing.length) {
+    steps.innerHTML = `<div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--teal-l)"><span>✓</span> Your profile is 100% complete! Share your public link with coaches.</div>`;
+    return;
+  }
+  steps.innerHTML = missing.slice(0,4).map((f,i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+      <span style="width:20px;height:20px;border-radius:50%;background:rgba(29,158,117,.15);color:var(--teal);font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600">${i+1}</span>
+      <span style="font-size:13px;color:var(--muted)">Add your <strong style="color:var(--text)">${f.label}</strong></span>
+    </div>`).join('');
+}
+
+function updateQuickStats() {
+  document.getElementById('qs-sport').textContent = data.sport || '—';
+  document.getElementById('qs-gpa').textContent = data.gpa ? data.gpa+(data.gpa_scale?'/'+data.gpa_scale:'') : '—';
+  document.getElementById('qs-grad').textContent = data.graduation || '—';
+}
+
+function updatePublicLink() {
+  const name = (data.name||'your-name').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const url = `scouted.app/athlete/${name}`;
+  const el = document.getElementById('public-url');
+  if(el) el.textContent = url;
+  const pl = document.getElementById('pub-link-display');
+  if(pl) pl.textContent = url;
+}
+
+function updateResumePreview() {
+  const name = data.name || 'Your Name';
+  const sport = [data.sport, data.position, data.country].filter(Boolean).join(' · ') || 'Sport · Position · Country';
+  const sat = [data.sat?'SAT '+data.sat:'', data.act?'ACT '+data.act:''].filter(Boolean).join(' / ') || '—';
+
+  document.getElementById('rv-name').textContent = name;
+  document.getElementById('rv-sport').textContent = sport;
+  document.getElementById('rv-sport2').textContent = data.sport || '—';
+  document.getElementById('rv-position').textContent = data.position || '—';
+  document.getElementById('rv-team').textContent = data.team || '—';
+  document.getElementById('rv-height').textContent = data.height || '—';
+  document.getElementById('rv-weight').textContent = data.weight || '—';
+  document.getElementById('rv-eligible').textContent = data.eligible || '—';
+  document.getElementById('rv-school').textContent = data.school || '—';
+  document.getElementById('rv-gpa').textContent = data.gpa ? `${data.gpa} / ${data.gpa_scale||'4.0'}` : '—';
+  document.getElementById('rv-grad').textContent = data.graduation || '—';
+  document.getElementById('rv-sat').textContent = sat;
+  document.getElementById('rv-english').textContent = data.english || '—';
+  document.getElementById('rv-major').textContent = data.major || '—';
+  document.getElementById('rv-bio').textContent = data.bio || 'Complete your profile to generate your resume.';
+  document.getElementById('rv-video').textContent = data.video || '—';
+}
+
+function updateSidebarUser() {
+  const name = data.name || 'Your Name';
+  document.getElementById('sb-uname').textContent = name;
+  document.getElementById('sb-avatar').textContent = name.charAt(0).toUpperCase() || '?';
+}
+
+function updateEmailTemplate() {
+  if(!data.name) return;
+  const name = (data.name||'').split(' ')[0];
+  const sport = data.sport || '[Sport]';
+  const position = data.position || '[Position]';
+  const country = data.country || '[Country]';
+  const gpa = data.gpa ? `GPA ${data.gpa}/${data.gpa_scale||'4.0'}` : '';
+  const grad = data.graduation || '[Graduation]';
+  const url = (data.name||'your-name').toLowerCase().replace(/\s+/g,'-');
+  const template = `Subject: Athletic Scholarship Inquiry — ${data.name} | ${sport} | ${country}
+
+Dear Coach,
+
+My name is ${data.name}, a ${position} from ${country}. I am reaching out to express my strong interest in competing at your institution.
+
+I am graduating in ${grad}${gpa?` with a ${gpa}`:''}. My sport background and academic profile are detailed in my Scouted profile:
+
+→ scouted.app/athlete/${url}
+${data.video?`→ Highlight video: ${data.video}`:''}
+
+I am very interested in your program and would love to learn about any opportunities. Please let me know if you need any additional information.
+
+Thank you for your time and consideration.
+
+Sincerely,
+${data.name}
+${data.email||''}
+${data.phone||''}`;
+  document.getElementById('email-template').textContent = template;
+}
+
+// ═══ PUBLIC PROFILE MODAL ═══════════════════════════════
+
+function openPublicProfile() {
+  document.getElementById('pub-name').textContent = data.name || 'Athlete Name';
+  document.getElementById('pub-sport').textContent = [data.sport,data.position,data.country].filter(Boolean).join(' · ') || 'Sport · Position · Country';
+  const tags = [data.years, data.eligible?'Eligible '+data.eligible:'', data.division, data.scholarship].filter(Boolean);
+  document.getElementById('pub-tags').innerHTML = tags.map(t=>`<div class="pub-tag">${t}</div>`).join('');
+
+  const athletic = [{k:'Team',v:data.team},{k:'Height',v:data.height},{k:'Weight',v:data.weight},{k:'Languages',v:data.languages}].filter(x=>x.v);
+  document.getElementById('pub-athletic').innerHTML = athletic.map(s=>`<div class="pub-stat"><div class="ps-val">${s.v}</div><div class="ps-key">${s.k}</div></div>`).join('') || '<div style="color:var(--muted);font-size:13px">Complete your sport info to display stats here.</div>';
+
+  const acad = [{k:'School',v:data.school},{k:'GPA',v:data.gpa?`${data.gpa}/${data.gpa_scale||'4.0'}`:''},{k:'Graduation',v:data.graduation},{k:'Major',v:data.major}].filter(x=>x.v);
+  document.getElementById('pub-academic').innerHTML = acad.map(s=>`<div class="pub-stat"><div class="ps-val">${s.v}</div><div class="ps-key">${s.k}</div></div>`).join('') || '<div style="color:var(--muted);font-size:13px">Complete your academic info.</div>';
+
+  const embed = getEmbedUrl(data.video||'');
+  const vidSection = document.getElementById('pub-video-section');
+  vidSection.style.display = embed ? 'block' : 'none';
+  if(embed) document.getElementById('pub-video-embed').innerHTML = `<iframe src="${embed}" allowfullscreen style="width:100%;height:100%;border:none"></iframe>`;
+
+  document.getElementById('pub-bio').textContent = data.bio || '—';
+  updatePublicLink();
+  document.getElementById('modal-public').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closePublicProfile() {
+  document.getElementById('modal-public').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// ═══ COPY & TOAST ════════════════════════════════════════
+
+function copyLink() {
+  const name = (data.name||'your-name').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  navigator.clipboard.writeText(`https://scouted.app/athlete/${name}`).then(()=>showToast('✓ Link copied!'));
+}
+
+function copyEmailTemplate() {
+  const text = document.getElementById('email-template').textContent;
+  navigator.clipboard.writeText(text).then(()=>showToast('✓ Email template copied!'));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ═══ PDF GENERATION ══════════════════════════════════════
+
+function generatePDF() {
+  if(!window.jspdf) { showToast('PDF library loading... try again in a moment'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W=210, M=15;
+  let y=0;
+
+  // Header
+  doc.setFillColor(8,80,65);
+  doc.rect(0,0,W,44,'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.setTextColor(93,202,165);
+  doc.text('SCOUTED — ATHLETIC RECRUITING PROFILE', M, 11);
+  doc.setFontSize(20); doc.setTextColor(255,255,255);
+  doc.text(data.name||'Athlete Name', M, 25);
+  doc.setFontSize(11); doc.setFont('helvetica','normal');
+  doc.setTextColor(93,202,165);
+  const sub = [data.sport,data.position,data.country].filter(Boolean).join(' · ');
+  doc.text(sub||'Sport · Position · Country', M, 35);
+
+  y = 54;
+
+  // Two-column layout
+  const col1=M, col2=W/2+4, colW=W/2-M-4;
+
+  // Athletic section
+  doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.setTextColor(29,158,117);
+  doc.text('ATHLETIC PROFILE', col1, y);
+  y+=2;
+  doc.setDrawColor(29,158,117); doc.setLineWidth(0.3);
+  doc.line(col1, y, col1+colW, y);
+  y+=5;
+
+  const athletic = [
+    ['Sport', data.sport], ['Position', data.position],
+    ['Current Team', data.team], ['Height', data.height],
+    ['Weight', data.weight], ['Eligible from', data.eligible],
+    ['Years playing', data.years]
+  ].filter(r=>r[1]);
+
+  let ay = y;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  athletic.forEach(([k,v]) => {
+    doc.setTextColor(107,158,133); doc.text(k, col1, ay);
+    doc.setTextColor(234,245,239); doc.text(String(v), col1+30, ay);
+    ay+=6;
+  });
+
+  // Academic section (right column)
+  let ry = y-7;
+  doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.setTextColor(29,158,117);
+  doc.text('ACADEMIC PROFILE', col2, ry);
+  ry+=2;
+  doc.line(col2, ry, col2+colW, ry);
+  ry+=5;
+
+  const academic = [
+    ['School', data.school], ['GPA', data.gpa?`${data.gpa} / ${data.gpa_scale||'4.0'}`:null],
+    ['Graduation', data.graduation], ['SAT', data.sat?`SAT ${data.sat}`:null],
+    ['ACT', data.act?`ACT ${data.act}`:null], ['TOEFL', data.toefl?`${data.toefl}/120`:null],
+    ['English', data.english], ['Major', data.major], ['Division pref.', data.division]
+  ].filter(r=>r[1]);
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  academic.forEach(([k,v]) => {
+    doc.setTextColor(107,158,133); doc.text(k, col2, ry);
+    doc.setTextColor(234,245,239); doc.text(String(v), col2+28, ry);
+    ry+=6;
+  });
+
+  y = Math.max(ay, ry) + 4;
+
+  // Stats
+  const sport = data.sport;
+  const statDefs = STATS[sport];
+  if(statDefs) {
+    const statVals = statDefs.filter(s => data['stat_'+s.k]);
+    if(statVals.length) {
+      doc.setFontSize(8); doc.setFont('helvetica','bold');
+      doc.setTextColor(29,158,117);
+      doc.text('PERFORMANCE STATS', M, y);
+      y+=2; doc.line(M,y,W-M,y); y+=5;
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      let sx=M;
+      statVals.forEach((s,i) => {
+        doc.setTextColor(107,158,133); doc.text(s.l, sx, y);
+        doc.setTextColor(234,245,239); doc.text(String(data['stat_'+s.k]||'—'), sx, y+5);
+        sx += 42;
+        if((i+1)%4===0){sx=M;y+=14;}
+      });
+      y += 14;
+    }
+  }
+
+  // Achievements
+  const achs = (achievements||[]).filter(a=>a.trim());
+  if(achs.length) {
+    doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.setTextColor(29,158,117);
+    doc.text('ACHIEVEMENTS & HONORS', M, y);
+    y+=2; doc.line(M,y,W-M,y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    achs.forEach(a => {
+      doc.setTextColor(234,245,239);
+      doc.text('→  '+a, M, y);
+      y+=6;
+    });
+    y+=4;
+  }
+
+  // Bio
+  if(data.bio) {
+    doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.setTextColor(29,158,117);
+    doc.text('ABOUT THE ATHLETE', M, y);
+    y+=2; doc.line(M,y,W-M,y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.setTextColor(200,225,215);
+    const lines = doc.splitTextToSize(data.bio, W-M*2);
+    doc.text(lines, M, y);
+    y += lines.length*5+6;
+  }
+
+  // Video
+  if(data.video) {
+    doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.setTextColor(29,158,117);
+    doc.text('HIGHLIGHT VIDEO', M, y);
+    y+=2; doc.line(M,y,W-M,y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.setTextColor(93,202,165);
+    doc.text(data.video, M, y);
+    y+=10;
+  }
+
+  // Footer
+  doc.setFillColor(8,80,65);
+  doc.rect(0,285,W,12,'F');
+  doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.setTextColor(93,202,165);
+  const name_slug = (data.name||'athlete').toLowerCase().replace(/\s+/g,'-');
+  doc.text(`Generated by Scouted · scouted.app/athlete/${name_slug} · ${new Date().toLocaleDateString()}`, M, 292);
+
+  doc.save(`${data.name||'athlete'}-scouted-resume.pdf`);
+  showToast('✓ PDF downloaded!');
+}
+
+// ═══ INIT ════════════════════════════════════════════════
+
+function init() {
+  loadData();
+  renderAchievements();
+  updateUI();
+
+  // Close modal on outside click
+  document.getElementById('modal-public').addEventListener('click', function(e) {
+    if(e.target===this) closePublicProfile();
+  });
+}
+
+init();
+</script>
+</body>
+</html>
