@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scouted — Get Found. Get Recruited.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal:       #1D9E75;
+    --teal-light: #5DCAA5;
+    --teal-dark:  #085041;
+    --teal-glow:  #0F6E56;
+    --blue:       #185FA5;
+    --bg:         #0B1310;
+    --bg2:        #111C18;
+    --bg3:        #162119;
+    --surface:    #1A2A23;
+    --border:     #1F3328;
+    --text:       #EAF5EF;
+    --muted:      #6B9E85;
+    --accent:     #5DCAA5;
+    --white:      #F1F9F5;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* NOISE TEXTURE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── NAVBAR ─────────────────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px;
+    height: 68px;
+    border-bottom: 1px solid rgba(29,158,117,.1);
+    background: rgba(11,19,16,.85);
+    backdrop-filter: blur(16px);
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+  }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 700;
+    color: var(--white); letter-spacing: -0.3px;
+  }
+
+  .nav-links {
+    display: flex; align-items: center; gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-size: 14px; font-weight: 400;
+    color: var(--muted); text-decoration: none;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-cta {
+    background: var(--teal);
+    color: #fff !important;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-weight: 500 !important;
+    transition: background .2s !important;
+  }
+  .nav-cta:hover { background: var(--teal-glow) !important; }
+
+  /* ─── HERO ───────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    overflow: hidden;
+  }
+
+  /* Glow orbs */
+  .hero::after {
+    content: '';
+    position: absolute;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(29,158,117,.18) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -55%);
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid rgba(93,202,165,.25);
+    background: rgba(93,202,165,.08);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 12px; font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin-bottom: 32px;
+    animation: fadeUp .6s ease both;
+  }
+  .hero-badge span { width:6px; height:6px; border-radius:50%; background:var(--teal); display:inline-block; animation: pulse 2s ease infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(52px, 8vw, 96px);
+    font-weight: 800;
+    line-height: .95;
+    letter-spacing: -3px;
+    color: var(--white);
+    max-width: 900px;
+    animation: fadeUp .7s .1s ease both;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--teal-light);
+  }
+
+  .hero-sub {
+    font-size: clamp(16px, 2vw, 20px);
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 520px;
+    margin: 24px auto 0;
+    line-height: 1.6;
+    animation: fadeUp .7s .2s ease both;
+  }
+
+  .hero-form {
+    display: flex; gap: 10px;
+    margin-top: 40px;
+    animation: fadeUp .7s .3s ease both;
+  }
+  .hero-form input {
+    width: 300px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.05);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .hero-form input::placeholder { color: var(--muted); }
+  .hero-form input:focus { border-color: var(--teal); }
+
+  .btn-primary {
+    padding: 14px 28px;
+    border-radius: 10px;
+    background: var(--teal);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 500;
+    border: none; cursor: pointer;
+    transition: background .2s, transform .15s;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: var(--teal-glow); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .hero-note {
+    font-size: 12px; color: var(--muted);
+    margin-top: 12px;
+    animation: fadeUp .7s .4s ease both;
+  }
+
+  /* Floating sport badges */
+  .sport-badges {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+    margin-top: 48px;
+    animation: fadeUp .7s .5s ease both;
+  }
+  .sport-badge {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 13px; color: var(--muted);
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(20px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  /* ─── STATS BAR ──────────────────────────────────────── */
+  .stats-bar {
+    display: flex; justify-content: center; gap: 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+  }
+  .stat-item {
+    flex: 1; max-width: 260px;
+    padding: 36px 24px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px; font-weight: 800;
+    color: var(--teal-light);
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 13px; color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ─── SECTION COMMONS ────────────────────────────────── */
+  section { position: relative; z-index: 1; }
+
+  .section-label {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 14px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    color: var(--white);
+  }
+
+  .section-sub {
+    font-size: 16px; font-weight: 300;
+    color: var(--muted);
+    max-width: 500px;
+    margin-top: 14px;
+    line-height: 1.7;
+  }
+
+  /* ─── HOW IT WORKS ───────────────────────────────────── */
+  .how {
+    padding: 100px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .how-header { margin-bottom: 64px; }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .step-card {
+    background: var(--bg2);
+    padding: 40px 36px;
+    position: relative;
+  }
+
+  .step-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 72px; font-weight: 800;
+    color: rgba(29,158,117,.12);
+    line-height: 1;
+    margin-bottom: 24px;
+    letter-spacing: -4px;
+  }
+
+  .step-icon {
+    width: 44px; height: 44px;
+    background: rgba(29,158,117,.12);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .step-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 700;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+
+  .step-card p {
+    font-size: 14px; font-weight: 300;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .step-line {
+    position: absolute;
+    top: 56px; right: -1px;
+    width: 2px; height: 40px;
+    background: var(--teal);
+    display: none;
+  }
+
+  /* ─── FEATURES ───────────────────────────────────────── */
+  .features {
+    padding: 100px 48px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .features-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .features-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: end;
+    margin-bottom: 64px;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .feature-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    transition: border-color .2s, transform .2s;
+  }
+  .feature-card:hover {
+    border-color: rgba(29,158,117,.4);
+    transform: translateY(-3px);
+  }
+
+  .feature-card.wide { grid-column: span 2; }
+
+  .feature-icon {
+    width: 40px; height: 40px;
+    background: rgba(29,158,117,.1);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .feature-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .feature-card p {
+    font-size: 13px; font-weight: 300;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .feature-tag {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 11px; font-weight: 500;
+    color: var(--teal);
+    background: rgba(29,158,117,.1);
+    padding: 3px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ─── GLOBAL ─────────────────────────────────────────── */
+  .global {
+    padding: 100px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .flags-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .flag-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 24px;
+    line-height: 1;
+  }
+
+  .flag-card span {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ─── DIVISIONS ──────────────────────────────────────── */
+  .divisions {
+    padding: 100px 48px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .divisions-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .divisions-header { margin-bottom: 48px; }
+
+  .div-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .div-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 32px;
+    background: var(--bg3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .div-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--teal);
+  }
+
+  .div-card.d1::before { background: #1D9E75; }
+  .div-card.d2::before { background: #185FA5; }
+  .div-card.naia::before { background: #7F77DD; }
+
+  .div-badge {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+    display: inline-block;
+    letter-spacing: .05em;
+  }
+
+  .d1 .div-badge { background: rgba(29,158,117,.15); color: var(--teal-light); }
+  .d2 .div-badge { background: rgba(24,95,165,.15); color: #85B7EB; }
+  .naia .div-badge { background: rgba(127,119,221,.15); color: #AFA9EC; }
+
+  .div-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px; font-weight: 800;
+    color: var(--white);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .div-card p {
+    font-size: 13px; font-weight: 300;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .div-stat {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .div-dot { width:5px; height:5px; border-radius:50%; background: var(--teal); }
+
+  /* ─── PRICING ────────────────────────────────────────── */
+  .pricing {
+    padding: 100px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .pricing-header { margin-bottom: 48px; }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .price-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 32px;
+    background: var(--bg2);
+  }
+
+  .price-card.popular {
+    border-color: var(--teal);
+    background: rgba(29,158,117,.05);
+    position: relative;
+  }
+
+  .pop-badge {
+    position: absolute;
+    top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--teal);
+    color: #fff;
+    font-size: 11px; font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 100px;
+    letter-spacing: .06em;
+    white-space: nowrap;
+  }
+
+  .plan-name {
+    font-size: 12px; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .plan-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 48px; font-weight: 800;
+    color: var(--white);
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+
+  .plan-price sup { font-size: 24px; letter-spacing: 0; vertical-align: super; }
+  .plan-price sub { font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 300; color: var(--muted); letter-spacing: 0; }
+
+  .plan-desc {
+    font-size: 13px; font-weight: 300;
+    color: var(--muted);
+    margin: 12px 0 24px;
+    line-height: 1.6;
+  }
+
+  .plan-features { list-style: none; margin-bottom: 28px; }
+  .plan-features li {
+    font-size: 13px; color: var(--muted);
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .plan-features li:last-child { border-bottom: none; }
+  .plan-features li::before {
+    content: '';
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(29,158,117,.15);
+    flex-shrink: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 8l3 3 5-5' stroke='%231D9E75' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
+  .btn-outline {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .btn-outline:hover { border-color: var(--teal); background: rgba(29,158,117,.06); }
+
+  .btn-full {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: var(--teal);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .btn-full:hover { background: var(--teal-glow); }
+
+  /* ─── FINAL CTA ──────────────────────────────────────── */
+  .final-cta {
+    padding: 120px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+  }
+
+  .final-cta::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(29,158,117,.14) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .final-cta h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    color: var(--white);
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .final-cta p {
+    font-size: 16px; font-weight: 300;
+    color: var(--muted);
+    max-width: 400px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+    position: relative;
+  }
+
+  .final-form {
+    display: flex; gap: 10px; justify-content: center;
+    position: relative;
+  }
+
+  /* ─── FOOTER ─────────────────────────────────────────── */
+  footer {
+    padding: 48px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg);
+  }
+
+  .footer-left { display: flex; align-items: center; gap: 32px; }
+
+  .footer-links {
+    display: flex; gap: 24px; list-style: none;
+  }
+  .footer-links a {
+    font-size: 13px; color: var(--muted);
+    text-decoration: none; transition: color .2s;
+  }
+  .footer-links a:hover { color: var(--accent); }
+
+  .footer-copy {
+    font-size: 12px; color: var(--muted);
+  }
+
+  /* ─── RESPONSIVE ─────────────────────────────────────── */
+  @media (max-width: 900px) {
+    nav { padding: 0 24px; }
+    .nav-links { display: none; }
+    .how, .features, .global, .divisions, .pricing, .final-cta, footer { padding: 60px 24px; }
+    .steps, .feature-grid, .div-grid, .pricing-grid { grid-template-columns: 1fr; }
+    .feature-card.wide { grid-column: span 1; }
+    .features-header, .global { grid-template-columns: 1fr; gap: 32px; }
+    .flags-grid { grid-template-columns: repeat(4, 1fr); }
+    .stats-bar { flex-wrap: wrap; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .hero-form { flex-direction: column; align-items: center; }
+    .hero-form input { width: 100%; max-width: 320px; }
+    footer { flex-direction: column; gap: 24px; align-items: flex-start; }
+    .footer-left { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .final-form { flex-direction: column; align-items: center; }
+    .final-form input { width: 100%; max-width: 320px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── NAVBAR ─────────────────────────────────────────── -->
+<nav>
+  <a href="#" class="logo">
+    <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="13" cy="13" r="9" stroke="#1D9E75" stroke-width="2.5"/>
+      <line x1="20" y1="20" x2="28" y2="28" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="13" cy="13" r="3.5" fill="#185FA5"/>
+    </svg>
+    <span class="logo-text">Scouted</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#divisions">Divisions</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#" onclick="openModal('login'); return false;">Log in</a></li>
+    <li><a href="#" onclick="openModal('signup'); return false;" class="nav-cta">Sign up free</a></li>
+  </ul>
+</nav>
+
+<!-- ─── HERO ───────────────────────────────────────────── -->
+<section class="hero" id="hero">
+  <div class="hero-badge">
+    <span></span>
+    Any country · Any sport · Any division
+  </div>
+
+  <h1>
+    Get <em>found.</em><br>Get recruited.
+  </h1>
+
+  <p class="hero-sub">
+    Build your athlete profile, upload your highlights, and send your resume directly to NCAA D1, D2, and NAIA coaches — in minutes. No agent. No meetings. From anywhere in the world.
+  </p>
+
+  <div style="display:flex;gap:12px;margin-top:40px;flex-wrap:wrap;justify-content:center;animation:fadeUp .7s .3s ease both;">
+    <button class="btn-primary" style="padding:16px 36px;font-size:16px;" onclick="openModal('signup')">Create your free account</button>
+    <button onclick="openModal('login')" style="padding:16px 28px;font-size:16px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--white);font-family:'DM Sans',sans-serif;cursor:pointer;transition:border-color .2s;" onmouseover="this.style.borderColor='#1D9E75'" onmouseout="this.style.borderColor='var(--border)'">Log in</button>
+  </div>
+
+  <p class="hero-note" style="animation:fadeUp .7s .4s ease both;">Free to start &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; Cancel anytime</p>
+
+  <div class="sport-badges">
+    <div class="sport-badge">⚽ Soccer</div>
+    <div class="sport-badge">⚾ Baseball</div>
+    <div class="sport-badge">🏀 Basketball</div>
+    <div class="sport-badge">🏊 Swimming</div>
+    <div class="sport-badge">🎾 Tennis</div>
+    <div class="sport-badge">🏃 Track & Field</div>
+    <div class="sport-badge">🏐 Volleyball</div>
+    <div class="sport-badge">+ more</div>
+  </div>
+</section>
+
+<!-- ─── STATS ───────────────────────────────────────────── -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-num">8M+</div>
+    <div class="stat-label">High school athletes in the US</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">1,200+</div>
+    <div class="stat-label">NCAA & NAIA programs</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Divisions covered</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">180+</div>
+    <div class="stat-label">Countries welcome</div>
+  </div>
+</div>
+
+<!-- ─── HOW IT WORKS ───────────────────────────────────── -->
+<section class="how" id="how">
+  <div class="how-header">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">From profile to offer<br>in three steps</h2>
+    <p class="section-sub">No agents. No meetings. No middlemen. Scouted puts you directly in front of college coaches.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <div class="step-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="10" cy="7" r="4" stroke="#1D9E75" stroke-width="1.5"/>
+          <path d="M3 17c0-3.314 3.134-6 7-6s7 2.686 7 6" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h3>Build your profile</h3>
+      <p>Fill in your stats, GPA, sport, position, and personal story. Guided step-by-step — takes less than 10 minutes.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <div class="step-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="14" height="14" rx="3" stroke="#1D9E75" stroke-width="1.5"/>
+          <path d="M8 10l3 3 5-5" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3>Upload your highlights</h3>
+      <p>Upload video directly from your phone or paste a YouTube link. Your automatic athletic resume PDF is generated instantly.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <div class="step-icon">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 10l4 4 8-8" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3>Send to coaches</h3>
+      <p>Browse 1,200+ programs filtered by sport, division, and scholarship availability. Send your full profile to coaches in one click.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FEATURES ───────────────────────────────────────── -->
+<section class="features" id="features">
+  <div class="features-inner">
+    <div class="features-header">
+      <div>
+        <div class="section-label">Features</div>
+        <h2 class="section-title">Everything you need<br>to get recruited</h2>
+      </div>
+      <p class="section-sub">Built for athletes and families who want results without paying thousands to a recruiting agency.</p>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-card wide">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M4 14l4-4 3 3 5-7" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h4>Automatic athletic resume PDF</h4>
+        <p>Your profile generates a professional, coach-ready PDF automatically. Stats, video link, GPA, contact info — all formatted and ready to send. No design skills needed.</p>
+        <span class="feature-tag">Auto-generated</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="7" stroke="#1D9E75" stroke-width="1.5"/>
+            <path d="M10 6v4l3 2" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h4>Video highlight hosting</h4>
+        <p>Upload directly from your phone or link from YouTube. Your highlights are always accessible and shareable.</p>
+        <span class="feature-tag">HD streaming</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="3" stroke="#1D9E75" stroke-width="1.5"/>
+            <circle cx="10" cy="10" r="7" stroke="#1D9E75" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h4>Global — 180+ countries</h4>
+        <p>Athletes from Colombia, Brazil, Nigeria, Spain and anywhere else can create a profile and reach US coaches.</p>
+        <span class="feature-tag">Multilingual</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M3 6h14M3 10h10M3 14h7" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h4>Coach directory</h4>
+        <p>Filter 1,200+ programs by division, sport, scholarship availability, location, and GPA requirements.</p>
+        <span class="feature-tag">NCAA + NAIA</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M16 8c0 4-6 9-6 9S4 12 4 8a6 6 0 0112 0z" stroke="#1D9E75" stroke-width="1.5"/>
+            <circle cx="10" cy="8" r="2" stroke="#1D9E75" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <h4>Profile analytics</h4>
+        <p>See which coaches viewed your profile, how many times, and when. Know who's interested.</p>
+        <span class="feature-tag">Real-time</span>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 3l2 4h5l-4 3 2 5-5-3-5 3 2-5-4-3h5z" stroke="#1D9E75" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h4>Compatibility matching</h4>
+        <p>Scouted suggests programs that fit your academic profile, athletic level, and scholarship needs.</p>
+        <span class="feature-tag">AI-powered</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── GLOBAL REACH ────────────────────────────────────── -->
+<section>
+  <div class="global" id="global">
+    <div>
+      <div class="section-label">Global reach</div>
+      <h2 class="section-title">Built for athletes everywhere</h2>
+      <p class="section-sub">US coaches actively recruit international talent. Scouted is your bridge — available in English, Spanish, and Portuguese from day one.</p>
+      <div style="margin-top:32px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px; font-size:14px; color:var(--muted);">
+          <div style="width:5px;height:5px;border-radius:50%;background:var(--teal);flex-shrink:0;"></div>
+          No need for a recruiting agent or advisor
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; font-size:14px; color:var(--muted);">
+          <div style="width:5px;height:5px;border-radius:50%;background:var(--teal);flex-shrink:0;"></div>
+          Interface in English, Spanish, and Portuguese
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; font-size:14px; color:var(--muted);">
+          <div style="width:5px;height:5px;border-radius:50%;background:var(--teal);flex-shrink:0;"></div>
+          Works from any device, any country
+        </div>
+      </div>
+    </div>
+
+    <div class="flags-grid">
+      <div class="flag-card">🇨🇴<span>Colombia</span></div>
+      <div class="flag-card">🇧🇷<span>Brazil</span></div>
+      <div class="flag-card">🇲🇽<span>Mexico</span></div>
+      <div class="flag-card">🇺🇸<span>USA</span></div>
+      <div class="flag-card">🇪🇸<span>Spain</span></div>
+      <div class="flag-card">🇳🇬<span>Nigeria</span></div>
+      <div class="flag-card">🇩🇪<span>Germany</span></div>
+      <div class="flag-card">🇯🇵<span>Japan</span></div>
+      <div class="flag-card">🇦🇷<span>Argentina</span></div>
+      <div class="flag-card">🇰🇪<span>Kenya</span></div>
+      <div class="flag-card">🇫🇷<span>France</span></div>
+      <div class="flag-card">🌍<span>+169 more</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DIVISIONS ──────────────────────────────────────── -->
+<section class="divisions" id="divisions">
+  <div class="divisions-inner">
+    <div class="divisions-header">
+      <div class="section-label">Divisions</div>
+      <h2 class="section-title">NCAA D1, D2 & NAIA<br>all in one place</h2>
+    </div>
+
+    <div class="div-grid">
+      <div class="div-card d1">
+        <div class="div-badge">NCAA Division I</div>
+        <h3>D1</h3>
+        <p>The highest level of college athletics. D1 schools offer the most scholarships and compete at the top level nationally.</p>
+        <div class="div-stat"><div class="div-dot"></div>350+ member schools</div>
+        <div class="div-stat" style="margin-top:8px;"><div class="div-dot"></div>Full athletic scholarships available</div>
+      </div>
+
+      <div class="div-card d2">
+        <div class="div-badge">NCAA Division II</div>
+        <h3>D2</h3>
+        <p>Competitive athletics with a strong emphasis on academics. Partial scholarships available, great balance of sport and study.</p>
+        <div class="div-stat"><div class="div-dot" style="background:#378ADD;"></div>300+ member schools</div>
+        <div class="div-stat" style="margin-top:8px;"><div class="div-dot" style="background:#378ADD;"></div>Partial athletic scholarships</div>
+      </div>
+
+      <div class="div-card naia">
+        <div class="div-badge">NAIA</div>
+        <h3>NAIA</h3>
+        <p>National Association of Intercollegiate Athletics. Smaller schools with great scholarship opportunities often overlooked by athletes.</p>
+        <div class="div-stat"><div class="div-dot" style="background:#7F77DD;"></div>250+ member schools</div>
+        <div class="div-stat" style="margin-top:8px;"><div class="div-dot" style="background:#7F77DD;"></div>Athletic scholarships available</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PRICING ────────────────────────────────────────── -->
+<section class="pricing" id="pricing">
+  <div class="pricing-header">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">A fraction of what agencies charge</h2>
+    <p class="section-sub">Traditional recruiting services cost $1,000–3,000/year. Scouted gives you more, for less.</p>
+  </div>
+
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-price"><sup>$</sup>0</div>
+      <p class="plan-desc">Get started and see if Scouted is right for you.</p>
+      <ul class="plan-features">
+        <li>Basic athlete profile</li>
+        <li>1 highlight video</li>
+        <li>Browse coach directory</li>
+        <li>1 PDF resume download</li>
+      </ul>
+      <button class="btn-outline" onclick="openModal('signup')">Get started free</button>
+    </div>
+
+    <div class="price-card popular">
+      <div class="pop-badge">MOST POPULAR</div>
+      <div class="plan-name">Athlete</div>
+      <div class="plan-price"><sup>$</sup>15<sub>/mo</sub></div>
+      <p class="plan-desc">Everything you need to land a college scholarship.</p>
+      <ul class="plan-features">
+        <li>Full athlete profile</li>
+        <li>Unlimited highlight videos</li>
+        <li>Unlimited PDF resumes</li>
+        <li>Direct coach messaging</li>
+        <li>Profile analytics</li>
+        <li>AI compatibility matching</li>
+      </ul>
+      <!-- Reemplaza la URL con tu checkout de Lemon Squeezy para el plan Athlete -->
+      <button class="btn-full" onclick="goToCheckout('ATHLETE_CHECKOUT_URL')">Get Athlete plan →</button>
+    </div>
+
+    <div class="price-card">
+      <div class="plan-name">Academy</div>
+      <div class="plan-price"><sup>$</sup>25<sub>/mo</sub></div>
+      <p class="plan-desc">For coaches and academies managing multiple athletes at once.</p>
+      <ul class="plan-features">
+        <li>Up to 10 athlete profiles</li>
+        <li>All Athlete plan features</li>
+        <li>Academy dashboard</li>
+        <li>Bulk coach outreach</li>
+        <li>Team analytics & reports</li>
+        <li>Priority support</li>
+      </ul>
+      <!-- Reemplaza la URL con tu checkout de Lemon Squeezy para el plan Academy -->
+      <button class="btn-outline" onclick="goToCheckout('ACADEMY_CHECKOUT_URL')">Get Academy plan →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FINAL CTA ──────────────────────────────────────── -->
+<section class="final-cta">
+  <h2>Your scholarship<br>starts here.</h2>
+  <p>Join athletes from around the world building their path to a US college scholarship — in minutes, not months.</p>
+  <button class="btn-primary" style="padding:18px 44px;font-size:17px;border-radius:12px;" onclick="openModal('signup')">Create your free account →</button>
+  <p style="margin-top:16px;font-size:13px;color:var(--muted);position:relative;">Already have an account? <a href="#" onclick="openModal('login'); return false;" style="color:var(--teal-light);text-decoration:none;">Log in</a></p>
+</section>
+
+<!-- ─── FOOTER ─────────────────────────────────────────── -->
+<footer>
+  <div class="footer-left">
+    <a href="#" class="logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <circle cx="13" cy="13" r="9" stroke="#1D9E75" stroke-width="2.5"/>
+        <line x1="20" y1="20" x2="28" y2="28" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="13" cy="13" r="3.5" fill="#185FA5"/>
+      </svg>
+      <span class="logo-text" style="font-size:17px;">Scouted</span>
+    </a>
+    <ul class="footer-links">
+      <li><a href="#">How it works</a></li>
+      <li><a href="#">Features</a></li>
+      <li><a href="#">Pricing</a></li>
+      <li><a href="#">Contact</a></li>
+      <li><a href="#">Privacy</a></li>
+    </ul>
+  </div>
+  <p class="footer-copy">© 2025 Scouted. Get found. Get recruited.</p>
+</footer>
+
+<!-- ─── AUTH MODAL ─────────────────────────────────────── -->
+<div id="modal-overlay" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#111C18;border:1px solid #1F3328;border-radius:20px;padding:40px;width:100%;max-width:420px;margin:24px;position:relative;">
+    <button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#6B9E85;font-size:22px;cursor:pointer;line-height:1;">×</button>
+
+    <!-- Logo -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px;">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <circle cx="13" cy="13" r="9" stroke="#1D9E75" stroke-width="2.5"/>
+        <line x1="20" y1="20" x2="28" y2="28" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="13" cy="13" r="3.5" fill="#185FA5"/>
+      </svg>
+      <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#F1F9F5;">Scouted</span>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:0;margin-bottom:28px;background:#0B1310;border-radius:10px;padding:4px;">
+      <button id="tab-signup" onclick="switchTab('signup')" style="flex:1;padding:9px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;background:#1D9E75;color:#fff;">Sign up</button>
+      <button id="tab-login" onclick="switchTab('login')" style="flex:1;padding:9px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;background:transparent;color:#6B9E85;">Log in</button>
+    </div>
+
+    <!-- Signup form -->
+    <div id="form-signup">
+      <div style="margin-bottom:14px;">
+        <input id="signup-name" type="text" placeholder="Full name" style="width:100%;padding:13px 16px;border-radius:10px;border:1px solid #1F3328;background:rgba(255,255,255,.04);color:#EAF5EF;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;" onfocus="this.style.borderColor='#1D9E75'" onblur="this.style.borderColor='#1F3328'">
+      </div>
+      <div style="margin-bottom:14px;">
+        <input id="signup-email" type="email" placeholder="Email address" style="width:100%;padding:13px 16px;border-radius:10px;border:1px solid #1F3328;background:rgba(255,255,255,.04);color:#EAF5EF;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;" onfocus="this.style.borderColor='#1D9E75'" onblur="this.style.borderColor='#1F3328'">
+      </div>
+      <div style="margin-bottom:20px;">
+        <input id="signup-password" type="password" placeholder="Password (min. 8 characters)" style="width:100%;padding:13px 16px;border-radius:10px;border:1px solid #1F3328;background:rgba(255,255,255,.04);color:#EAF5EF;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;" onfocus="this.style.borderColor='#1D9E75'" onblur="this.style.borderColor='#1F3328'">
+      </div>
+      <div style="margin-bottom:14px;">
+        <select id="signup-role" style="width:100%;padding:13px 16px;border-radius:10px;border:1px solid #1F3328;background:#0B1310;color:#EAF5EF;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;" onfocus="this.style.borderColor='#1D9E75'" onblur="this.style.borderColor='#1F3328'">
+          <option value="">I am a...</option>
+          <option value="athlete">Athlete</option>
+          <option value="coach">Coach / Academy</option>
+          <option value="parent">Parent</option>
+        </select>
+      </div>
+      <button onclick="handleSignup()" id="btn-signup" style="width:100%;padding:14px;border-radius:10px;background:#1D9E75;color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:background .2s;">Create free account</button>
+      <div id="signup-msg" style="margin-top:12px;font-size:13px;text-align:center;min-height:20px;"></div>
+    </div>
+
+    <!-- Login form -->
+    <div id="form-login" style="display:none;">
+      <div style="margin-bottom:14px;">
+        <input id="login-email" type="email" placeholder="Email address" style="width:100%;padding:13px 16px;border-radius:10px;border:1px solid #1F3328;background:rgba(255,255,255,.04);color:#EAF5EF;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;" onfocus="this.style.borderColor='#1D9E75'" onblur="this.style.borderColor='#1F3328'">
+      </div>
+      <div style="margin-bottom:20px;">
+        <input id="login-password" type="password" placeholder="Password" style="width:100%;padding:13px 16px;border-radius:10px;border:1px solid #1F3328;background:rgba(255,255,255,.04);color:#EAF5EF;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;" onfocus="this.style.borderColor='#1D9E75'" onblur="this.style.borderColor='#1F3328'">
+      </div>
+      <button onclick="handleLogin()" id="btn-login" style="width:100%;padding:14px;border-radius:10px;background:#1D9E75;color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:background .2s;">Log in to Scouted</button>
+      <div id="login-msg" style="margin-top:12px;font-size:13px;text-align:center;min-height:20px;"></div>
+      <p style="text-align:center;margin-top:16px;font-size:12px;color:#6B9E85;">
+        <a href="#" style="color:#5DCAA5;text-decoration:none;">Forgot your password?</a>
+      </p>
+    </div>
+
+    <p style="font-size:11px;color:#6B9E85;text-align:center;margin-top:20px;line-height:1.6;">
+      By signing up you agree to our <a href="#" style="color:#5DCAA5;text-decoration:none;">Terms</a> and <a href="#" style="color:#5DCAA5;text-decoration:none;">Privacy Policy</a>.
+    </p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ─── SUPABASE CONFIGURATION ───────────────────────────
+  // 1. Crea un proyecto gratis en supabase.com
+  // 2. Ve a Settings → API y copia estos dos valores:
+  const SUPABASE_URL  = 'TU_SUPABASE_URL';   // ej: https://xyzxyz.supabase.co
+  const SUPABASE_ANON = 'TU_SUPABASE_ANON_KEY'; // empieza con "eyJ..."
+  // ─────────────────────────────────────────────────────
+
+  const supabase = window.supabase
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+    : null;
+
+  // ─── MODAL ────────────────────────────────────────────
+  function openModal(tab = 'signup') {
+    document.getElementById('modal-overlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    switchTab(tab);
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  function switchTab(tab) {
+    const isSignup = tab === 'signup';
+    document.getElementById('form-signup').style.display = isSignup ? 'block' : 'none';
+    document.getElementById('form-login').style.display  = isSignup ? 'none'  : 'block';
+    document.getElementById('tab-signup').style.background = isSignup ? '#1D9E75' : 'transparent';
+    document.getElementById('tab-signup').style.color      = isSignup ? '#fff' : '#6B9E85';
+    document.getElementById('tab-login').style.background  = isSignup ? 'transparent' : '#1D9E75';
+    document.getElementById('tab-login').style.color       = isSignup ? '#6B9E85' : '#fff';
+  }
+
+  // ─── LEMON SQUEEZY CHECKOUT ───────────────────────────
+  // Pega aquí las URLs de checkout de cada producto en Lemon Squeezy
+  // (Lemon Squeezy → Products → tu producto → Share → Copy link)
+  const LS_ATHLETE_URL = 'ATHLETE_CHECKOUT_URL'; // ej: https://scouted.lemonsqueezy.com/buy/xxxxxxxx
+  const LS_ACADEMY_URL = 'ACADEMY_CHECKOUT_URL'; // ej: https://scouted.lemonsqueezy.com/buy/yyyyyyyy
+
+  function goToCheckout(plan) {
+    const url = plan === 'ATHLETE_CHECKOUT_URL' ? LS_ATHLETE_URL : LS_ACADEMY_URL;
+    if (url.includes('CHECKOUT_URL')) {
+      alert('⚙️ Checkout coming soon! Create a free account to get started.');
+      openModal('signup');
+      return;
+    }
+    window.open(url, '_blank');
+  }
+  // ─────────────────────────────────────────────────────
+
+  function setMsg(id, text, color = '#6B9E85') {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.style.color = color;
+  }
+
+  function setBtn(id, text, disabled) {
+    const btn = document.getElementById(id);
+    btn.textContent = text;
+    btn.disabled = disabled;
+    btn.style.opacity = disabled ? '0.7' : '1';
+  }
+
+  // ─── SIGN UP ──────────────────────────────────────────
+  async function handleSignup() {
+    const name     = document.getElementById('signup-name').value.trim();
+    const email    = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const role     = document.getElementById('signup-role').value;
+
+    if (!name || !email || !password || !role) {
+      return setMsg('signup-msg', 'Please fill in all fields.', '#E05252');
+    }
+    if (password.length < 8) {
+      return setMsg('signup-msg', 'Password must be at least 8 characters.', '#E05252');
+    }
+
+    setBtn('btn-signup', 'Creating account...', true);
+    setMsg('signup-msg', '');
+
+    if (!supabase) {
+      // Demo mode — Supabase not configured yet
+      setTimeout(() => {
+        setMsg('signup-msg', '✓ Account created! Check your email to confirm.', '#1D9E75');
+        setBtn('btn-signup', 'Create free account', false);
+      }, 1200);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: name, role } }
+      });
+
+      if (error) throw error;
+      setMsg('signup-msg', '✓ Check your email to confirm your account!', '#1D9E75');
+      setBtn('btn-signup', 'Create free account', false);
+    } catch (err) {
+      setMsg('signup-msg', err.message || 'Something went wrong. Try again.', '#E05252');
+      setBtn('btn-signup', 'Create free account', false);
+    }
+  }
+
+  // ─── LOG IN ───────────────────────────────────────────
+  async function handleLogin() {
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+      return setMsg('login-msg', 'Please enter your email and password.', '#E05252');
+    }
+
+    setBtn('btn-login', 'Logging in...', true);
+    setMsg('login-msg', '');
+
+    if (!supabase) {
+      setTimeout(() => {
+        setMsg('login-msg', '✓ Logged in! Redirecting...', '#1D9E75');
+        setBtn('btn-login', 'Log in to Scouted', false);
+      }, 1200);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      setMsg('login-msg', '✓ Welcome back! Redirecting...', '#1D9E75');
+      // Redirige al dashboard cuando lo tengas:
+      // window.location.href = '/dashboard';
+    } catch (err) {
+      setMsg('login-msg', err.message || 'Invalid email or password.', '#E05252');
+      setBtn('btn-login', 'Log in to Scouted', false);
+    }
+  }
+
+  // ─── SCROLL ANIMATIONS ────────────────────────────────
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.step-card, .feature-card, .div-card, .price-card, .flag-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = 'opacity .5s ease, transform .5s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
